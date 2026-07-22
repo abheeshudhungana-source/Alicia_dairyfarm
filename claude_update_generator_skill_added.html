@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Status Update Generator - Emoji Format</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .status-section {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .status-section h2 {
+            margin-bottom: 20px;
+            color: #555;
+            text-align: center;
+        }
+
+        .status-input-group {
+            margin-bottom: 20px;
+        }
+
+        .status-input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #666;
+        }
+
+        .status-input-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: Arial, sans-serif;
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .status-input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .status-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .status-buttons button {
+            flex: 1;
+            margin-top: 0;
+            padding: 15px;
+            font-size: 16px;
+        }
+
+        .status-output {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+
+        .status-output h3 {
+            margin-bottom: 15px;
+            color: #555;
+            font-size: 18px;
+        }
+
+        .status-output-text {
+            white-space: pre-wrap;
+            font-family: Arial, sans-serif;
+            line-height: 1.8;
+            color: #333;
+            background: white;
+            padding: 15px;
+            border-radius: 4px;
+            border: 1px solid #eee;
+        }
+
+        .copy-btn {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 15px;
+        }
+
+        .copy-btn:hover {
+            background: #5a6268;
+        }
+
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        .clear-btn {
+            background: #6c757d;
+        }
+
+        .clear-btn:hover {
+            background: #5a6268;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📝 Status Update Generator</h1>
+
+        <div class="status-section">
+            <h2>Emoji Format Status Update</h2>
+            
+            <div class="status-input-group">
+                <label for="recipientName">Recipient Name/Team:</label>
+                <input type="text" id="recipientName" placeholder="e.g., Team, John, etc.">
+            </div>
+            
+            <div class="status-input-group">
+                <label for="yourName">Your Name:</label>
+                <input type="text" id="yourName" placeholder="Your name for signature">
+            </div>
+            
+            <div class="status-input-group">
+                <label for="accomplished">✅ Accomplished:</label>
+                <textarea id="accomplished" placeholder="- What I finished or made progress on"></textarea>
+            </div>
+            
+            <div class="status-input-group">
+                <label for="workingOn">🔨 Currently working on:</label>
+                <textarea id="workingOn" placeholder="- What I am currently doing"></textarea>
+            </div>
+            
+            <div class="status-input-group">
+                <label for="blockers">🚧 Blockers / Questions:</label>
+                <textarea id="blockers" placeholder="- Anything blocking me or anything I need help with"></textarea>
+            </div>
+            
+            <div class="status-buttons">
+                <button type="button" onclick="generateStatusUpdate()">Generate Status Update</button>
+                <button type="button" class="clear-btn" onclick="clearStatusForm()">Clear</button>
+            </div>
+            
+            <div class="status-output" id="statusOutput" style="display: none;">
+                <h3>Generated Status Update:</h3>
+                <div class="status-output-text" id="statusOutputText"></div>
+                <button class="copy-btn" onclick="copyStatusUpdate()">📋 Copy to Clipboard</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function polishText(text) {
+            // Make text more professional while keeping meaning
+            return text
+                .replace(/i'm/gi, "I'm")
+                .replace(/dont/gi, "don't")
+                .replace(/wont/gi, "won't")
+                .replace(/cant/gi, "can't")
+                .replace(/gonna/gi, "going to")
+                .replace(/wanna/gi, "want to")
+                .replace(/gotta/gi, "got to")
+                .replace(/kinda/gi, "kind of")
+                .replace(/sorta/gi, "sort of")
+                .replace(/tho/gi, "though")
+                .replace(/cuz/gi, "because")
+                .replace(/bc/gi, "because")
+                .replace(/tbh/gi, "to be honest")
+                .replace(/fyi/gi, "for your information")
+                .replace(/idk/gi, "I don't know")
+                .replace(/imo/gi, "in my opinion")
+                .replace(/btw/gi, "by the way")
+                .replace(/pls/gi, "please")
+                .replace(/thx/gi, "thanks")
+                .replace(/u/gi, "you")
+                .replace(/ur/gi, "your")
+                .replace(/\s+/g, ' ') // Remove extra spaces
+                .trim();
+        }
+
+        function formatBulletPoints(text) {
+            if (!text.trim()) return '';
+            const lines = text.split('\n').filter(line => line.trim());
+            return lines.map(line => {
+                let bullet = line.trim();
+                if (!bullet.startsWith('-')) {
+                    bullet = '- ' + bullet;
+                }
+                return polishText(bullet);
+            }).join('\n');
+        }
+
+        function generateStatusUpdate() {
+            const recipient = document.getElementById('recipientName').value || 'Team';
+            const yourName = document.getElementById('yourName').value || 'Your Name';
+            const accomplished = document.getElementById('accomplished').value;
+            const workingOn = document.getElementById('workingOn').value;
+            const blockers = document.getElementById('blockers').value;
+
+            const accomplishedText = formatBulletPoints(accomplished);
+            const workingOnText = formatBulletPoints(workingOn);
+            
+            let blockersText;
+            if (blockers.trim()) {
+                blockersText = formatBulletPoints(blockers);
+            } else {
+                blockersText = '- No blockers at the moment.';
+            }
+
+            const formattedUpdate = `Hi ${recipient},
+
+## Here is my status update:
+
+✅ Accomplished since last check-in:
+${accomplishedText}
+
+🔨 Currently working on:
+${workingOnText}
+
+🚧 Blockers / Questions:
+${blockersText}
+
+Thanks,
+${yourName}`;
+
+            document.getElementById('statusOutputText').textContent = formattedUpdate;
+            document.getElementById('statusOutput').style.display = 'block';
+        }
+
+        function clearStatusForm() {
+            document.getElementById('recipientName').value = '';
+            document.getElementById('yourName').value = '';
+            document.getElementById('accomplished').value = '';
+            document.getElementById('workingOn').value = '';
+            document.getElementById('blockers').value = '';
+            document.getElementById('statusOutput').style.display = 'none';
+        }
+
+        function copyStatusUpdate() {
+            const statusText = document.getElementById('statusOutputText').textContent;
+            navigator.clipboard.writeText(statusText).then(() => {
+                alert('✅ Status update copied to clipboard!');
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+                alert('Failed to copy. Please select and copy manually.');
+            });
+        }
+    </script>
+</body>
+</html>
