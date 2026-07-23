@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Management</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .form-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .form-section h2 {
+            margin-bottom: 15px;
+            color: #555;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #666;
+        }
+
+        input {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 15px;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        /* Collapsible Section Styles */
+        .collapsible-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .collapsible-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            padding: 10px 0;
+            border-bottom: 2px solid #eee;
+        }
+
+        .collapsible-header h2 {
+            margin: 0;
+            color: #555;
+        }
+
+        .collapsible-header .badge {
+            background: #dc3545;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .collapsible-header .badge.attention {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .collapsible-header .badge.review {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .collapsible-header .badge.inventory {
+            background: #007bff;
+            color: white;
+        }
+
+        .collapsible-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+
+        .collapsible-content.open {
+            max-height: 2000px;
+            transition: max-height 0.5s ease-in;
+        }
+
+        .toggle-icon {
+            font-size: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .toggle-icon.rotated {
+            transform: rotate(180deg);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background: #f8f9fa;
+            font-weight: bold;
+            color: #333;
+        }
+
+        tr:hover {
+            background: #f9f9f9;
+        }
+
+        .review-btn {
+            background: #17a2b8;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-top: 0;
+        }
+
+        .review-btn:hover {
+            background: #138496;
+        }
+
+        .order-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-top: 0;
+        }
+
+        .order-btn:hover {
+            background: #218838;
+        }
+
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-top: 0;
+        }
+
+        .delete-btn:hover {
+            background: #c82333;
+        }
+
+        .total-items {
+            margin-top: 15px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .alert-table th {
+            background: #fff3cd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Inventory Management</h1>
+
+        <!-- Add Inventory Form -->
+        <div class="form-section">
+            <h2>Add New Inventory</h2>
+            <form id="inventoryForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="product">Product Name</label>
+                        <input type="text" id="product" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="location">Location</label>
+                        <input type="text" id="location" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="quantity">Quantity</label>
+                        <input type="number" id="quantity" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="reorderPoint">Reorder Point</label>
+                        <input type="number" id="reorderPoint" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="maxStock">Max Stock</label>
+                        <input type="number" id="maxStock" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="expirationDate">Expiration Date</label>
+                        <input type="date" id="expirationDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="supplier">Supplier</label>
+                        <input type="text" id="supplier" required>
+                    </div>
+                </div>
+                <button type="submit">Add to Inventory</button>
+            </form>
+        </div>
+
+        <!-- Current Inventory Display (Collapsible) -->
+        <div class="collapsible-section">
+            <div class="collapsible-header" onclick="toggleCollapsible('inventoryContent', 'inventoryIcon')">
+                <h2>📦 Current Inventory</h2>
+                <div>
+                    <span class="badge inventory" id="inventoryCount">0</span>
+                    <span class="toggle-icon" id="inventoryIcon">▼</span>
+                </div>
+            </div>
+            <div class="collapsible-content open" id="inventoryContent">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Location</th>
+                            <th>Quantity</th>
+                            <th>Reorder Point</th>
+                            <th>Max Stock</th>
+                            <th>Expiration Date</th>
+                            <th>Supplier</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventoryTable">
+                        <!-- Inventory items will be displayed here -->
+                    </tbody>
+                </table>
+                <div class="total-items">Total Items: <span id="totalItems">0</span></div>
+            </div>
+        </div>
+
+        <!-- Action Required Section (Collapsible) -->
+        <div class="collapsible-section">
+            <div class="collapsible-header" onclick="toggleCollapsible('actionContent', 'actionIcon')">
+                <h2>🔴 Action Required</h2>
+                <div>
+                    <span class="badge" id="actionCount">0</span>
+                    <span class="toggle-icon" id="actionIcon">▼</span>
+                </div>
+            </div>
+            <div class="collapsible-content" id="actionContent">
+                <table class="alert-table">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Expiration Date</th>
+                            <th>Quantity</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="actionTable">
+                        <!-- Action items will be displayed here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Attention Required Section (Collapsible) -->
+        <div class="collapsible-section">
+            <div class="collapsible-header" onclick="toggleCollapsible('attentionContent', 'attentionIcon')">
+                <h2>🟡 Attention Required</h2>
+                <div>
+                    <span class="badge attention" id="attentionCount">0</span>
+                    <span class="toggle-icon" id="attentionIcon">▼</span>
+                </div>
+            </div>
+            <div class="collapsible-content" id="attentionContent">
+                <table class="alert-table">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Expiration Date</th>
+                            <th>Quantity</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="attentionTable">
+                        <!-- Attention items will be displayed here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Under Review Section (Collapsible) -->
+        <div class="collapsible-section">
+            <div class="collapsible-header" onclick="toggleCollapsible('reviewContent', 'reviewIcon')">
+                <h2>🔵 Under Review</h2>
+                <div>
+                    <span class="badge review" id="reviewCount">0</span>
+                    <span class="toggle-icon" id="reviewIcon">▼</span>
+                </div>
+            </div>
+            <div class="collapsible-content" id="reviewContent">
+                <table class="alert-table">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Location</th>
+                            <th>Quantity</th>
+                            <th>Reorder Point</th>
+                            <th>Max Stock</th>
+                            <th>Expiration Date</th>
+                            <th>Supplier</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reviewTable">
+                        <!-- Review items will be displayed here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load inventory from embedded CSV data
+        let inventory = [];
+        let reviewItems = [];
+
+        // Embedded inventory data from CSV
+        const embeddedInventoryData = [
+            {
+                product: "Whole Milk 1 Gal",
+                location: "Refrigerated (35-38°F)",
+                quantity: 45,
+                reorderPoint: 100,
+                maxStock: 200,
+                expirationDate: "2026-07-28",
+                supplier: "Midwest Dairy"
+            },
+            {
+                product: "2% Reduced Fat Milk 1 Gal",
+                location: "Refrigerated (35-38°F)",
+                quantity: 180,
+                reorderPoint: 120,
+                maxStock: 250,
+                expirationDate: "2026-08-02",
+                supplier: "Midwest Dairy"
+            },
+            {
+                product: "Skim Milk 1 Gal",
+                location: "Refrigerated (35-38°F)",
+                quantity: 30,
+                reorderPoint: 50,
+                maxStock: 100,
+                expirationDate: "2026-07-26",
+                supplier: "Midwest Dairy"
+            },
+            {
+                product: "Greek Yogurt Plain 32oz",
+                location: "Refrigerated (35-38°F)",
+                quantity: 25,
+                reorderPoint: 80,
+                maxStock: 150,
+                expirationDate: "2026-07-29",
+                supplier: "FarmFresh"
+            },
+            {
+                product: "Strawberry Yogurt 6oz",
+                location: "Refrigerated (35-38°F)",
+                quantity: 310,
+                reorderPoint: 100,
+                maxStock: 200,
+                expirationDate: "2026-08-15",
+                supplier: "FarmFresh"
+            },
+            {
+                product: "Sharp Cheddar Block 16oz",
+                location: "Refrigerated (35-38°F)",
+                quantity: 140,
+                reorderPoint: 60,
+                maxStock: 100,
+                expirationDate: "2026-09-10",
+                supplier: "Prairie Farms"
+            },
+            {
+                product: "Shredded Mozzarella 5lb",
+                location: "Refrigerated (35-38°F)",
+                quantity: 18,
+                reorderPoint: 40,
+                maxStock: 80,
+                expirationDate: "2026-08-05",
+                supplier: "Prairie Farms"
+            },
+            {
+                product: "Unsalted Butter 1lb",
+                location: "Refrigerated (35-38°F)",
+                quantity: 220,
+                reorderPoint: 100,
+                maxStock: 150,
+                expirationDate: "2026-08-25",
+                supplier: "Midwest Dairy"
+            },
+            {
+                product: "Salted Butter 1lb",
+                location: "Refrigerated (35-38°F)",
+                quantity: 85,
+                reorderPoint: 90,
+                maxStock: 150,
+                expirationDate: "2026-08-20",
+                supplier: "Midwest Dairy"
+            },
+            {
+                product: "Heavy Whipping Cream 1pt",
+                location: "Refrigerated (35-38°F)",
+                quantity: 12,
+                reorderPoint: 30,
+                maxStock: 60,
+                expirationDate: "2026-07-27",
+                supplier: "Prairie Farms"
+            },
+            {
+                product: "Half & Half 1qt",
+                location: "Refrigerated (35-38°F)",
+                quantity: 110,
+                reorderPoint: 50,
+                maxStock: 100,
+                expirationDate: "2026-08-01",
+                supplier: "Midwest Dairy"
+            },
+            {
+                product: "Sour Cream 16oz",
+                location: "Refrigerated (35-38°F)",
+                quantity: 40,
+                reorderPoint: 45,
+                maxStock: 90,
+                expirationDate: "2026-07-30",
+                supplier: "FarmFresh"
+            }
+        ];
+
+        // Load embedded inventory data
+        function loadEmbeddedData() {
+            console.log('Loading embedded inventory data...');
+            inventory = [...embeddedInventoryData];
+            console.log('Loaded', inventory.length, 'items from embedded data');
+            initializeInventory();
+        }
+
+        // Initialize inventory after loading
+        function initializeInventory() {
+            // Load review items from localStorage
+            const savedReviewItems = localStorage.getItem('reviewItems');
+            if (savedReviewItems) {
+                reviewItems = JSON.parse(savedReviewItems);
+            }
+
+            console.log('Final inventory count:', inventory.length);
+            
+            renderInventory();
+            renderReviewTable();
+            analyzeInventory();
+        }
+
+        // Render inventory table
+        function renderInventory() {
+            const tableBody = document.getElementById('inventoryTable');
+            tableBody.innerHTML = '';
+
+            inventory.forEach((item, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.product}</td>
+                    <td>${item.location}</td>
+                    <td>${item.quantity}</td>
+                    <td>${item.reorderPoint}</td>
+                    <td>${item.maxStock}</td>
+                    <td>${item.expirationDate}</td>
+                    <td>${item.supplier}</td>
+                    <td>
+                        <button class="review-btn" onclick="reviewItem(${index})">Review</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            document.getElementById('totalItems').textContent = inventory.length;
+            document.getElementById('inventoryCount').textContent = inventory.length;
+        }
+
+        // Add new inventory item
+        document.getElementById('inventoryForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const newItem = {
+                product: document.getElementById('product').value,
+                location: document.getElementById('location').value,
+                quantity: parseInt(document.getElementById('quantity').value),
+                reorderPoint: parseInt(document.getElementById('reorderPoint').value),
+                maxStock: parseInt(document.getElementById('maxStock').value),
+                expirationDate: document.getElementById('expirationDate').value,
+                supplier: document.getElementById('supplier').value
+            };
+
+            inventory.push(newItem);
+            saveInventory();
+            renderInventory();
+            analyzeInventory();
+            this.reset();
+        });
+
+        // Review inventory item
+        function reviewItem(index) {
+            if (confirm('Move this item to Under Review?')) {
+                const item = inventory.splice(index, 1)[0];
+                reviewItems.push(item);
+                saveInventory();
+                saveReviewItems();
+                renderInventory();
+                renderReviewTable();
+                analyzeInventory();
+            }
+        }
+
+        // Remove item from review (restore to inventory)
+        function restoreFromReview(index) {
+            if (confirm('Restore this item to inventory?')) {
+                const item = reviewItems.splice(index, 1)[0];
+                inventory.push(item);
+                saveInventory();
+                saveReviewItems();
+                renderInventory();
+                renderReviewTable();
+                analyzeInventory();
+            }
+        }
+
+        // Delete item from review permanently
+        function deleteFromReview(index) {
+            if (confirm('Permanently delete this item?')) {
+                reviewItems.splice(index, 1);
+                saveReviewItems();
+                renderReviewTable();
+            }
+        }
+
+        // Render review table
+        function renderReviewTable() {
+            const tableBody = document.getElementById('reviewTable');
+            tableBody.innerHTML = '';
+
+            reviewItems.forEach((item, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.product}</td>
+                    <td>${item.location}</td>
+                    <td>${item.quantity}</td>
+                    <td>${item.reorderPoint}</td>
+                    <td>${item.maxStock}</td>
+                    <td>${item.expirationDate}</td>
+                    <td>${item.supplier}</td>
+                    <td>
+                        <button class="order-btn" onclick="restoreFromReview(${index})">Restore</button>
+                        <button class="delete-btn" onclick="deleteFromReview(${index})">Delete</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            document.getElementById('reviewCount').textContent = reviewItems.length;
+        }
+
+        // Save inventory to localStorage
+        function saveInventory() {
+            localStorage.setItem('inventory', JSON.stringify(inventory));
+        }
+
+        // Save review items to localStorage
+        function saveReviewItems() {
+            localStorage.setItem('reviewItems', JSON.stringify(reviewItems));
+        }
+
+        // Toggle collapsible section
+        function toggleCollapsible(contentId, iconId) {
+            const content = document.getElementById(contentId);
+            const icon = document.getElementById(iconId);
+            
+            content.classList.toggle('open');
+            icon.classList.toggle('rotated');
+        }
+
+        // Analyze inventory for alerts
+        function analyzeInventory() {
+            const today = new Date();
+            const actionItems = [];
+            const attentionItems = [];
+
+            inventory.forEach(item => {
+                const expirationDate = new Date(item.expirationDate);
+                const daysLeft = Math.ceil((expirationDate - today) / (1000 * 60 * 60 * 24));
+                const needsReorder = item.quantity <= item.reorderPoint;
+
+                if (daysLeft <= 1 || needsReorder) {
+                    const reason = needsReorder ? "Below reorder point" : `Expires in ${daysLeft} day(s)`;
+                    actionItems.push({
+                        ...item,
+                        daysLeft,
+                        reason
+                    });
+                } else if (daysLeft <= 7) {
+                    attentionItems.push({
+                        ...item,
+                        daysLeft,
+                        reason: `Expires in ${daysLeft} days`
+                    });
+                }
+            });
+
+            // Update counts
+            document.getElementById('actionCount').textContent = actionItems.length;
+            document.getElementById('attentionCount').textContent = attentionItems.length;
+
+            // Render tables
+            renderAlertTable('actionTable', actionItems);
+            renderAlertTable('attentionTable', attentionItems);
+        }
+
+        // Render alert tables
+        function renderAlertTable(tableId, items) {
+            const tbody = document.getElementById(tableId);
+            tbody.innerHTML = '';
+
+            if (items.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5">No items require attention</td></tr>';
+                return;
+            }
+
+            items.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.product}</td>
+                    <td>${item.expirationDate}</td>
+                    <td>${item.quantity}</td>
+                    <td>${item.reason}</td>
+                    <td>
+                        <button class="order-btn" onclick="orderMore('${item.product}')">Order Now</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Order more function
+        function orderMore(product) {
+            alert(`Order placed for: ${product}`);
+        }
+
+        // Initialize - Load embedded data automatically
+        loadEmbeddedData();
+    </script>
+</body>
+</html>

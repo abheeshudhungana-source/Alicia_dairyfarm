@@ -1,0 +1,13 @@
+Product ID,Product Name,Category,Brand,Quantity on Hand,Reorder Threshold,Reorder Quantity,Sales Rate (units/day),Expiration Date,Storage Conditions,Stock Status
+P-1001,Whole Milk 1 Gal,Milk,Midwest Dairy,45,100,200,35,2026-07-28,Refrigerated (35-38°F),REORDER NOW
+P-1002,2% Reduced Fat Milk 1 Gal,Milk,Midwest Dairy,180,120,250,40,2026-08-02,Refrigerated (35-38°F),OK
+P-1003,Skim Milk 1 Gal,Milk,Midwest Dairy,30,50,100,15,2026-07-26,Refrigerated (35-38°F),EXPIRING SOON
+P-1004,Greek Yogurt Plain 32oz,Yogurt,FarmFresh,25,80,150,20,2026-07-29,Refrigerated (35-38°F),REORDER NOW / EXPIRING SOON
+P-1005,Strawberry Yogurt 6oz,Yogurt,FarmFresh,310,100,200,18,2026-08-15,Refrigerated (35-38°F),OVERSTOCKED
+P-1006,Sharp Cheddar Block 16oz,Cheese,Prairie Farms,140,60,100,12,2026-09-10,Refrigerated (35-38°F),OK
+P-1007,Shredded Mozzarella 5lb,Cheese,Prairie Farms,18,40,80,10,2026-08-05,Refrigerated (35-38°F),REORDER NOW
+P-1008,Unsalted Butter 1lb,Butter,Midwest Dairy,220,100,150,22,2026-08-25,Refrigerated (35-38°F),OK
+P-1009,Salted Butter 1lb,Butter,Midwest Dairy,85,90,150,25,2026-08-20,Refrigerated (35-38°F),REORDER NOW
+P-1010,Heavy Whipping Cream 1pt,Cream,Prairie Farms,12,30,60,8,2026-07-27,Refrigerated (35-38°F),REORDER NOW / EXPIRING SOON
+P-1011,Half & Half 1qt,Cream,Midwest Dairy,110,50,100,15,2026-08-01,Refrigerated (35-38°F),OK
+P-1012,Sour Cream 16oz,Cream,FarmFresh,40,45,90,10,2026-07-30,Refrigerated (35-38°F),REORDER NOW / EXPIRING SOON
