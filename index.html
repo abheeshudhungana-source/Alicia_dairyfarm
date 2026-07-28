@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inventory Management</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -383,128 +385,55 @@
     </div>
 
     <script>
-        // Load inventory from embedded CSV data
+        // Load inventory from archive.zip
         let inventory = [];
         let reviewItems = [];
 
-        // Embedded inventory data from CSV
-        const embeddedInventoryData = [
-            {
-                product: "Whole Milk 1 Gal",
-                location: "Refrigerated (35-38°F)",
-                quantity: 45,
-                reorderPoint: 100,
-                maxStock: 200,
-                expirationDate: "2026-07-28",
-                supplier: "Midwest Dairy"
-            },
-            {
-                product: "2% Reduced Fat Milk 1 Gal",
-                location: "Refrigerated (35-38°F)",
-                quantity: 180,
-                reorderPoint: 120,
-                maxStock: 250,
-                expirationDate: "2026-08-02",
-                supplier: "Midwest Dairy"
-            },
-            {
-                product: "Skim Milk 1 Gal",
-                location: "Refrigerated (35-38°F)",
-                quantity: 30,
-                reorderPoint: 50,
-                maxStock: 100,
-                expirationDate: "2026-07-26",
-                supplier: "Midwest Dairy"
-            },
-            {
-                product: "Greek Yogurt Plain 32oz",
-                location: "Refrigerated (35-38°F)",
-                quantity: 25,
-                reorderPoint: 80,
-                maxStock: 150,
-                expirationDate: "2026-07-29",
-                supplier: "FarmFresh"
-            },
-            {
-                product: "Strawberry Yogurt 6oz",
-                location: "Refrigerated (35-38°F)",
-                quantity: 310,
-                reorderPoint: 100,
-                maxStock: 200,
-                expirationDate: "2026-08-15",
-                supplier: "FarmFresh"
-            },
-            {
-                product: "Sharp Cheddar Block 16oz",
-                location: "Refrigerated (35-38°F)",
-                quantity: 140,
-                reorderPoint: 60,
-                maxStock: 100,
-                expirationDate: "2026-09-10",
-                supplier: "Prairie Farms"
-            },
-            {
-                product: "Shredded Mozzarella 5lb",
-                location: "Refrigerated (35-38°F)",
-                quantity: 18,
-                reorderPoint: 40,
-                maxStock: 80,
-                expirationDate: "2026-08-05",
-                supplier: "Prairie Farms"
-            },
-            {
-                product: "Unsalted Butter 1lb",
-                location: "Refrigerated (35-38°F)",
-                quantity: 220,
-                reorderPoint: 100,
-                maxStock: 150,
-                expirationDate: "2026-08-25",
-                supplier: "Midwest Dairy"
-            },
-            {
-                product: "Salted Butter 1lb",
-                location: "Refrigerated (35-38°F)",
-                quantity: 85,
-                reorderPoint: 90,
-                maxStock: 150,
-                expirationDate: "2026-08-20",
-                supplier: "Midwest Dairy"
-            },
-            {
-                product: "Heavy Whipping Cream 1pt",
-                location: "Refrigerated (35-38°F)",
-                quantity: 12,
-                reorderPoint: 30,
-                maxStock: 60,
-                expirationDate: "2026-07-27",
-                supplier: "Prairie Farms"
-            },
-            {
-                product: "Half & Half 1qt",
-                location: "Refrigerated (35-38°F)",
-                quantity: 110,
-                reorderPoint: 50,
-                maxStock: 100,
-                expirationDate: "2026-08-01",
-                supplier: "Midwest Dairy"
-            },
-            {
-                product: "Sour Cream 16oz",
-                location: "Refrigerated (35-38°F)",
-                quantity: 40,
-                reorderPoint: 45,
-                maxStock: 90,
-                expirationDate: "2026-07-30",
-                supplier: "FarmFresh"
+        async function loadArchiveData() {
+            try {
+                console.log('Fetching archive.zip...');
+                const response = await fetch('archive.zip');
+                if (!response.ok) throw new Error('Failed to fetch archive.zip');
+                
+                const blob = await response.blob();
+                const jszip = new JSZip();
+                
+                console.log('Extracting archive.zip...');
+                const zip = await jszip.loadAsync(blob);
+                
+                // Assuming the file is named dairy_dataset.csv
+                const csvFile = zip.file("dairy_dataset.csv");
+                if (!csvFile) {
+                    throw new Error("dairy_dataset.csv not found in archive.zip");
+                }
+                
+                const csvData = await csvFile.async("string");
+                
+                console.log('Parsing CSV...');
+                Papa.parse(csvData, {
+                    header: true,
+                    skipEmptyLines: true,
+                    complete: function(results) {
+                        inventory = results.data.map(row => ({
+                            product: row['Product Name'] + ' (' + row['Brand'] + ')',
+                            location: row['Storage Condition'],
+                            quantity: parseInt(row['Quantity in Stock (liters/kg)'] || 0),
+                            reorderPoint: parseInt(row['Reorder Quantity (liters/kg)'] || 0),
+                            maxStock: parseInt(row['Quantity (liters/kg)'] || 0),
+                            expirationDate: row['Expiration Date'],
+                            supplier: row['Brand']
+                        }));
+                        console.log('Loaded', inventory.length, 'items from archive.zip');
+                        initializeInventory();
+                    },
+                    error: function(error) {
+                        console.error('Error parsing CSV:', error);
+                    }
+                });
+                
+            } catch (error) {
+                console.error('Error loading archive data:', error);
             }
-        ];
-
-        // Load embedded inventory data
-        function loadEmbeddedData() {
-            console.log('Loading embedded inventory data...');
-            inventory = [...embeddedInventoryData];
-            console.log('Loaded', inventory.length, 'items from embedded data');
-            initializeInventory();
         }
 
         // Initialize inventory after loading
@@ -715,8 +644,8 @@
             alert(`Order placed for: ${product}`);
         }
 
-        // Initialize - Load embedded data automatically
-        loadEmbeddedData();
+        // Initialize - Load data from archive.zip automatically
+        loadArchiveData();
     </script>
 </body>
 </html>
