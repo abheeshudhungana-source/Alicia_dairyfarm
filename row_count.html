@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Row Count – Dairy Inventory</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', Arial, sans-serif;
+            background: linear-gradient(135deg, #1e1e2f, #3a3b5a);
+            color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .card {
+            backdrop-filter: blur(12px);
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 40px 60px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+        h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
+        p { font-size: 1.2rem; margin-top: 0; }
+        a { color: #61dafb; text-decoration: none; margin-top: 1rem; display: inline-block; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Inventory Row Count</h1>
+        <p id="rowCount">Loading…</p>
+        <a href="index.html">← Back to Inventory</a>
+    </div>
+    <script>
+        // Fetch the cleaned CSV and count rows (excluding header)
+        fetch('cleaned_up_dairydataset.csv')
+            .then(r => r.text())
+            .then(text => {
+                const lines = text.trim().split('\n');
+                const count = lines.length > 0 ? lines.length - 1 : 0; // subtract header
+                document.getElementById('rowCount').textContent = `Total rows (items): ${count}`;
+            })
+            .catch(err => {
+                console.error(err);
+                document.getElementById('rowCount').textContent = 'Failed to load data.';
+            });
+    </script>
+</body>
+</html>
