@@ -45,7 +45,7 @@
     <script>
         async function loadCount() {
             try {
-                const response = await fetch('dairy_dataset.csv');
+                const response = await fetch('cleaned_up_dairydataset.csv');
                 const text = await response.text();
                 
                 Papa.parse(text, {
