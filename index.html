@@ -391,9 +391,9 @@
 
         async function loadDatasetData() {
             try {
-                console.log('Fetching cleaned_up_dairydataset.csv...');
-                const response = await fetch('cleaned_up_dairydataset.csv');
-                if (!response.ok) throw new Error('Failed to fetch cleaned_up_dairydataset.csv. Make sure you are using the local server link!');
+                console.log('Fetching dairy_dataset.csv...');
+                const response = await fetch('dairy_dataset.csv');
+                if (!response.ok) throw new Error('Failed to fetch dairy_dataset.csv. Make sure you are using the local server link!');
                 
                 const csvData = await response.text();
                 
@@ -411,9 +411,7 @@
                             expirationDate: row['Expiration Date'] || 'N/A',
                             supplier: row['Brand'] || 'N/A'
                         }));
-                        console.log('Loaded', inventory.length, 'items from cleaned_up_dairydataset.csv');
-                        // Sort alphabetically by product name
-                        inventory.sort((a, b) => a.product.localeCompare(b.product));
+                        console.log('Loaded', inventory.length, 'items from dairy_dataset.csv');
                         initializeInventory();
                     },
                     error: function(error) {
@@ -447,7 +445,8 @@
             const tableBody = document.getElementById('inventoryTable');
             tableBody.innerHTML = '';
 
-            inventory.forEach((item, index) => {
+            const sortedInventory = [...inventory].sort((a, b) => a.product.localeCompare(b.product, undefined, { sensitivity: 'base' }));
+            sortedInventory.forEach((item) => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${item.product}</td>
@@ -458,14 +457,16 @@
                     <td>${item.expirationDate}</td>
                     <td>${item.supplier}</td>
                     <td>
-                        <button class="review-btn" onclick="reviewItem(${index})">Review</button>
+                        <button class="review-btn" onclick="reviewItemByProduct('${item.product.replace(/'/g, "\\'")}')">Review</button>
                     </td>
                 `;
                 tableBody.appendChild(row);
             });
 
-            document.getElementById('totalItems').textContent = inventory.length;
-            document.getElementById('inventoryCount').textContent = inventory.length;
+            // Count actual rendered rows in the table
+            const renderedRows = document.getElementById('inventoryTable').querySelectorAll('tr').length;
+            document.getElementById('totalItems').textContent = renderedRows;
+            document.getElementById('inventoryCount').textContent = renderedRows;
         }
 
         // Add new inventory item
@@ -491,6 +492,7 @@
 
         // Review inventory item
         function reviewItem(index) {
+            // Legacy function kept for compatibility; not used in UI after sorting changes
             if (confirm('Move this item to Under Review?')) {
                 const item = inventory.splice(index, 1)[0];
                 reviewItems.push(item);
@@ -500,6 +502,15 @@
                 renderReviewTable();
                 analyzeInventory();
             }
+        }
+
+        function reviewItemByProduct(product) {
+            const index = inventory.findIndex(i => i.product === product);
+            if (index === -1) {
+                alert('Item not found in inventory');
+                return;
+            }
+            reviewItem(index);
         }
 
         // Remove item from review (restore to inventory)
@@ -596,13 +607,16 @@
                 }
             });
 
-            // Update counts
-            document.getElementById('actionCount').textContent = actionItems.length;
-            document.getElementById('attentionCount').textContent = attentionItems.length;
-
-            // Render tables
+            // Render tables first
             renderAlertTable('actionTable', actionItems);
             renderAlertTable('attentionTable', attentionItems);
+
+            // Then update counts based on actual rendered rows
+            const actionRows = document.getElementById('actionTable').querySelectorAll('tr').length;
+            const attentionRows = document.getElementById('attentionTable').querySelectorAll('tr').length;
+            // Don't count the "No items require attention" placeholder row
+            document.getElementById('actionCount').textContent = (actionItems.length === 0) ? 0 : actionRows;
+            document.getElementById('attentionCount').textContent = (attentionItems.length === 0) ? 0 : attentionRows;
         }
 
         // Render alert tables
@@ -615,7 +629,8 @@
                 return;
             }
 
-            items.forEach(item => {
+            const sortedItems = [...items].sort((a, b) => a.product.localeCompare(b.product, undefined, { sensitivity: 'base' });
+            sortedItems.forEach(item => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${item.product}</td>
@@ -635,7 +650,7 @@
             alert(`Order placed for: ${product}`);
         }
 
-        // Initialize - Load data from cleaned_up_dairydataset.csv automatically
+        // Initialize - Load data from dairy_dataset.csv automatically
         loadDatasetData();
     </script>
 </body>
