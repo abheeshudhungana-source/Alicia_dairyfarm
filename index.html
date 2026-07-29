@@ -378,7 +378,7 @@
         async function loadDatasetData() {
             try {
                 console.log('Fetching cleaned_up_dairydataset.csv...');
-                const response = await fetch('cleaned_up_dairydataset.csv');
+                const response = await fetch('cleaned_up_dairydataset.csv?v=' + new Date().getTime());
                 if (!response.ok) throw new Error('Failed to fetch cleaned_up_dairydataset.csv. Make sure you are using the local server link!');
                 
                 const csvData = await response.text();
