@@ -148,6 +148,42 @@
             transform: rotate(180deg);
         }
 
+        /* Nested Collapsible Styles */
+        .nested-collapsible-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            padding: 8px 12px;
+            background: #eef2f5;
+            border: 1px solid #ddd;
+            margin-top: 10px;
+            border-radius: 4px;
+        }
+        
+        .nested-collapsible-header h3 {
+            margin: 0;
+            color: #444;
+            font-size: 16px;
+        }
+        
+        .nested-collapsible-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            padding: 0 10px;
+            border-left: 1px solid #ddd;
+            border-right: 1px solid #ddd;
+            border-bottom: 1px solid transparent;
+            background: #fff;
+        }
+        
+        .nested-collapsible-content.open {
+            max-height: 5000px;
+            border-bottom-color: #ddd;
+            padding-bottom: 10px;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
@@ -278,24 +314,10 @@
                 </div>
             </div>
             <div class="collapsible-content open" id="inventoryContent">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Product</th>
-                            <th>Location</th>
-                            <th>Quantity</th>
-                            <th>Reorder Point</th>
-                            <th>Max Stock</th>
-                            <th>Expiration Date</th>
-                            <th>Supplier</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="inventoryTable">
-                        <!-- Inventory items will be displayed here -->
-                    </tbody>
-                </table>
-                <div class="total-items">Total Items: <span id="totalItems">0</span></div>
+                <div id="inventoryList">
+                    <!-- Nested collapsibles will be generated here -->
+                </div>
+                <div class="total-items" style="margin-top:15px; font-weight:bold;">Total Items: <span id="totalItems">0</span></div>
             </div>
         </div>
 
@@ -309,20 +331,9 @@
                 </div>
             </div>
             <div class="collapsible-content" id="actionContent">
-                <table class="alert-table">
-                    <thead>
-                        <tr>
-                            <th>Product</th>
-                            <th>Expiration Date</th>
-                            <th>Quantity</th>
-                            <th>Status</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="actionTable">
-                        <!-- Action items will be displayed here -->
-                    </tbody>
-                </table>
+                <div id="actionList">
+                    <!-- Nested collapsibles will be generated here -->
+                </div>
             </div>
         </div>
 
@@ -336,20 +347,9 @@
                 </div>
             </div>
             <div class="collapsible-content" id="attentionContent">
-                <table class="alert-table">
-                    <thead>
-                        <tr>
-                            <th>Product</th>
-                            <th>Expiration Date</th>
-                            <th>Quantity</th>
-                            <th>Status</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="attentionTable">
-                        <!-- Attention items will be displayed here -->
-                    </tbody>
-                </table>
+                <div id="attentionList">
+                    <!-- Nested collapsibles will be generated here -->
+                </div>
             </div>
         </div>
 
@@ -363,23 +363,9 @@
                 </div>
             </div>
             <div class="collapsible-content" id="reviewContent">
-                <table class="alert-table">
-                    <thead>
-                        <tr>
-                            <th>Product</th>
-                            <th>Location</th>
-                            <th>Quantity</th>
-                            <th>Reorder Point</th>
-                            <th>Max Stock</th>
-                            <th>Expiration Date</th>
-                            <th>Supplier</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="reviewTable">
-                        <!-- Review items will be displayed here -->
-                    </tbody>
-                </table>
+                <div id="reviewList">
+                    <!-- Nested collapsibles will be generated here -->
+                </div>
             </div>
         </div>
     </div>
@@ -403,7 +389,9 @@
                     skipEmptyLines: true,
                     complete: function(results) {
                         inventory = results.data.map(row => ({
-                            product: row['Product Name'] + (row['Brand'] ? ' (' + row['Brand'] + ')' : ''),
+                            baseProduct: row['Product Name'] || 'Other',
+                            brand: row['Brand'] || 'Generic',
+                            product: (row['Product Name'] || 'Other') + (row['Brand'] ? ' (' + row['Brand'] + ')' : ''),
                             location: row['Storage Condition'] || 'N/A',
                             quantity: parseInt(row['Quantity in Stock (liters/kg)'] || 0),
                             reorderPoint: parseInt(row['Reorder Quantity (liters/kg)'] || 0),
@@ -442,39 +430,24 @@
 
         // Render inventory table
         function renderInventory() {
-            const tableBody = document.getElementById('inventoryTable');
-            tableBody.innerHTML = '';
-
-            const sortedInventory = [...inventory].sort((a, b) => a.product.localeCompare(b.product, undefined, { sensitivity: 'base' }));
-            sortedInventory.forEach((item) => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${item.product}</td>
-                    <td>${item.location}</td>
-                    <td>${item.quantity}</td>
-                    <td>${item.reorderPoint}</td>
-                    <td>${item.maxStock}</td>
-                    <td>${item.expirationDate}</td>
-                    <td>${item.supplier}</td>
-                    <td>
-                        <button class="review-btn" onclick="reviewItemByProduct('${item.product.replace(/'/g, "\\'")}')">Review</button>
-                    </td>
-                `;
-                tableBody.appendChild(row);
-            });
-
-            // Count actual rendered rows in the table
-            const renderedRows = document.getElementById('inventoryTable').querySelectorAll('tr').length;
-            document.getElementById('totalItems').textContent = renderedRows;
-            document.getElementById('inventoryCount').textContent = renderedRows;
+            renderGroupedTable('inventoryList', inventory, 'inventory');
+            document.getElementById('totalItems').textContent = inventory.length;
+            document.getElementById('inventoryCount').textContent = inventory.length;
         }
 
         // Add new inventory item
         document.getElementById('inventoryForm').addEventListener('submit', function(e) {
             e.preventDefault();
 
+            const productName = document.getElementById('product').value;
+            const match = productName.match(/^(.*?)(?:\s*\((.*?)\))?$/);
+            const baseProduct = match ? match[1].trim() : productName;
+            const brand = (match && match[2]) ? match[2].trim() : 'Generic';
+
             const newItem = {
-                product: document.getElementById('product').value,
+                baseProduct: baseProduct,
+                brand: brand,
+                product: productName,
                 location: document.getElementById('location').value,
                 quantity: parseInt(document.getElementById('quantity').value),
                 reorderPoint: parseInt(document.getElementById('reorderPoint').value),
@@ -537,27 +510,7 @@
 
         // Render review table
         function renderReviewTable() {
-            const tableBody = document.getElementById('reviewTable');
-            tableBody.innerHTML = '';
-
-            reviewItems.forEach((item, index) => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${item.product}</td>
-                    <td>${item.location}</td>
-                    <td>${item.quantity}</td>
-                    <td>${item.reorderPoint}</td>
-                    <td>${item.maxStock}</td>
-                    <td>${item.expirationDate}</td>
-                    <td>${item.supplier}</td>
-                    <td>
-                        <button class="order-btn" onclick="restoreFromReview(${index})">Restore</button>
-                        <button class="delete-btn" onclick="deleteFromReview(${index})">Delete</button>
-                    </td>
-                `;
-                tableBody.appendChild(row);
-            });
-
+            renderGroupedTable('reviewList', reviewItems, 'review');
             document.getElementById('reviewCount').textContent = reviewItems.length;
         }
 
@@ -608,41 +561,164 @@
             });
 
             // Render tables first
-            renderAlertTable('actionTable', actionItems);
-            renderAlertTable('attentionTable', attentionItems);
+            renderAlertTable('actionList', actionItems);
+            renderAlertTable('attentionList', attentionItems);
 
             // Then update counts based on actual rendered rows
-            const actionRows = document.getElementById('actionTable').querySelectorAll('tr').length;
-            const attentionRows = document.getElementById('attentionTable').querySelectorAll('tr').length;
+            
+            
             // Don't count the "No items require attention" placeholder row
-            document.getElementById('actionCount').textContent = (actionItems.length === 0) ? 0 : actionRows;
-            document.getElementById('attentionCount').textContent = (attentionItems.length === 0) ? 0 : attentionRows;
+            document.getElementById('actionCount').textContent = actionItems.length;
+            document.getElementById('attentionCount').textContent = attentionItems.length;
         }
 
-        // Render alert tables
-        function renderAlertTable(tableId, items) {
-            const tbody = document.getElementById(tableId);
-            tbody.innerHTML = '';
+        
+        function renderGroupedTable(containerId, items, columnsType) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
 
             if (items.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5">No items require attention</td></tr>';
+                container.innerHTML = '<p style="padding: 15px; color: #666;">No items found.</p>';
                 return;
             }
 
-            const sortedItems = [...items].sort((a, b) => a.product.localeCompare(b.product, undefined, { sensitivity: 'base' }));
-            sortedItems.forEach(item => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${item.product}</td>
-                    <td>${item.expirationDate}</td>
-                    <td>${item.quantity}</td>
-                    <td>${item.reason}</td>
-                    <td>
-                        <button class="order-btn" onclick="orderMore('${item.product}')">Order Now</button>
-                    </td>
-                `;
-                tbody.appendChild(row);
+            // Group items by baseProduct
+            const grouped = {};
+            items.forEach(item => {
+                const key = item.baseProduct || 'Other';
+                if (!grouped[key]) grouped[key] = [];
+                grouped[key].push(item);
             });
+
+            // Sort categories alphabetically
+            const categories = Object.keys(grouped).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+
+            categories.forEach(category => {
+                const categoryItems = grouped[category].sort((a, b) => a.brand.localeCompare(b.brand, undefined, { sensitivity: 'base' }));
+                
+                const headerId = 'header_' + containerId + '_' + category.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '');
+                const contentId = 'content_' + containerId + '_' + category.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '');
+                
+                const wrapper = document.createElement('div');
+                wrapper.innerHTML = `
+                    <div class="nested-collapsible-header" onclick="toggleCollapsible('${contentId}', '${headerId}_icon')">
+                        <h3>${category} (${categoryItems.length})</h3>
+                        <span class="toggle-icon" id="${headerId}_icon">?</span>
+                    </div>
+                    <div class="nested-collapsible-content" id="${contentId}">
+                        <table>
+                            <thead>
+                                ${columnsType === 'inventory' ? `
+                                    <tr>
+                                        <th>Brand</th>
+                                        <th>Location</th>
+                                        <th>Quantity</th>
+                                        <th>Reorder Point</th>
+                                        <th>Max Stock</th>
+                                        <th>Expiration Date</th>
+                                        <th>Supplier</th>
+                                        <th>Action</th>
+                                    </tr>
+                                ` : columnsType === 'alert' ? `
+                                    <tr>
+                                        <th>Brand</th>
+                                        <th>Expiration Date</th>
+                                        <th>Quantity</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                ` : `
+                                    <tr>
+                                        <th>Brand</th>
+                                        <th>Location</th>
+                                        <th>Quantity</th>
+                                        <th>Reorder Point</th>
+                                        <th>Max Stock</th>
+                                        <th>Expiration Date</th>
+                                        <th>Supplier</th>
+                                        <th>Action</th>
+                                    </tr>
+                                `}
+                            </thead>
+                            <tbody>
+                                ${categoryItems.map((item) => {
+                                    if (columnsType === 'inventory') {
+                                        return `
+                                            <tr>
+                                                <td>${item.brand}</td>
+                                                <td>${item.location}</td>
+                                                <td>${item.quantity}</td>
+                                                <td>${item.reorderPoint}</td>
+                                                <td>${item.maxStock}</td>
+                                                <td>${item.expirationDate}</td>
+                                                <td>${item.supplier}</td>
+                                                <td>
+                                                    <button class="review-btn" onclick="reviewItemByProduct('${item.product.replace(/'/g, "\\'")}')">Review</button>
+                                                </td>
+                                            </tr>
+                                        `;
+                                    } else if (columnsType === 'alert') {
+                                        return `
+                                            <tr>
+                                                <td>${item.brand}</td>
+                                                <td>${item.expirationDate}</td>
+                                                <td>${item.quantity}</td>
+                                                <td>${item.reason}</td>
+                                                <td>
+                                                    <button class="order-btn" onclick="orderMore('${item.product.replace(/'/g, "\\'")}')">Order Now</button>
+                                                </td>
+                                            </tr>
+                                        `;
+                                    } else if (columnsType === 'review') {
+                                        return `
+                                            <tr>
+                                                <td>${item.brand}</td>
+                                                <td>${item.location}</td>
+                                                <td>${item.quantity}</td>
+                                                <td>${item.reorderPoint}</td>
+                                                <td>${item.maxStock}</td>
+                                                <td>${item.expirationDate}</td>
+                                                <td>${item.supplier}</td>
+                                                <td>
+                                                    <button class="order-btn" onclick="restoreFromReviewByProduct('${item.product.replace(/'/g, "\\'")}')">Restore</button>
+                                                    <button class="delete-btn" onclick="deleteFromReviewByProduct('${item.product.replace(/'/g, "\\'")}')">Delete</button>
+                                                </td>
+                                            </tr>
+                                        `;
+                                    }
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+                container.appendChild(wrapper);
+            });
+        }
+        
+        function restoreFromReviewByProduct(product) {
+            const index = reviewItems.findIndex(i => i.product === product);
+            if (index > -1 && confirm('Restore this item to inventory?')) {
+                const item = reviewItems.splice(index, 1)[0];
+                inventory.push(item);
+                saveInventory();
+                saveReviewItems();
+                renderInventory();
+                renderReviewTable();
+                analyzeInventory();
+            }
+        }
+
+        function deleteFromReviewByProduct(product) {
+            const index = reviewItems.findIndex(i => i.product === product);
+            if (index > -1 && confirm('Permanently delete this item?')) {
+                reviewItems.splice(index, 1);
+                saveReviewItems();
+                renderReviewTable();
+            }
+        }
+\n\n        // Render alert tables
+        function renderAlertTable(listId, items) {
+            renderGroupedTable(listId, items, 'alert');
         }
 
         // Order more function
