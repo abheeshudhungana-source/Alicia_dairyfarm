@@ -527,10 +527,12 @@
         // Toggle collapsible section
         function toggleCollapsible(contentId, iconId) {
             const content = document.getElementById(contentId);
-            const icon = document.getElementById(iconId);
-            
             content.classList.toggle('open');
-            icon.classList.toggle('rotated');
+            
+            if (iconId) {
+                const icon = document.getElementById(iconId);
+                if (icon) icon.classList.toggle('rotated');
+            }
         }
 
         // Analyze inventory for alerts
@@ -601,9 +603,8 @@
                 
                 const wrapper = document.createElement('div');
                 wrapper.innerHTML = `
-                    <div class="nested-collapsible-header" onclick="toggleCollapsible('${contentId}', '${headerId}_icon')">
-                        <h3>${category} (${categoryItems.length})</h3>
-                        <span class="toggle-icon" id="${headerId}_icon">?</span>
+                    <div class="nested-collapsible-header" onclick="toggleCollapsible('${contentId}', null)">
+                        <span style="font-weight: 500;">${category} (${categoryItems.length})</span>
                     </div>
                     <div class="nested-collapsible-content" id="${contentId}">
                         <table>
