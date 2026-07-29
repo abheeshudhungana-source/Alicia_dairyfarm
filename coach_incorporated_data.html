@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coach Incorporated Inventory</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+        #inventory-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .inventory-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .expired { border: 2px solid red; }
+        .low-stock { border: 2px solid orange; }
+    </style>
+</head>
+<body>
+    <h1>Coach Incorporated Inventory</h1>
+    <div id="inventory-container">
+        <!-- Inventory cards will be loaded here -->
+    </div>
+
+    <script>
+        async function loadInventory() {
+            try {
+                const response = await fetch('inventory.csv');
+                if (!response.ok) throw new Error('Network response was not ok');
+                const text = await response.text();
+                const rows = text.trim().split('\n');
+                const headers = rows[0].split(',');
+                
+                let inventory = rows.slice(1).map(row => {
+                    const values = row.split(',');
+                    return headers.reduce((obj, header, i) => {
+                        obj[header.trim()] = values[i] ? values[i].trim() : '';
+                        return obj;
+                    }, {});
+                });
+
+                // Remove duplicates (keep first occurrence by item_name)
+                const seen = new Set();
+                inventory = inventory.filter(item => {
+                    if (seen.has(item.item_name)) return false;
+                    seen.add(item.item_name);
+                    return true;
+                });
+
+                return inventory;
+            } catch (error) {
+                console.error("Error loading CSV: ", error);
+                document.getElementById('inventory-container').innerHTML = "<p>Error loading inventory.csv. If opening locally, you may need a local server due to browser security restrictions.</p>";
+                return [];
+            }
+        }
+
+        function checkExpired(item) {
+            return new Date(item.expiration_date) < new Date();
+        }
+
+        function needsReorder(item) {
+            return parseInt(item.quantity) <= parseInt(item.reorder_point);
+        }
+
+        function displayInventory(items) {
+            if (!items || items.length === 0) return;
+            const container = document.getElementById('inventory-container');
+            container.innerHTML = items.map(item => {
+                const expired = checkExpired(item);
+                const lowStock = needsReorder(item);
+                return `
+                <div class="inventory-card ${expired ? 'expired' : ''} ${lowStock ? 'low-stock' : ''}">
+                    <h3>${item.item_name || 'Unknown'} ${expired ? '⚠️ EXPIRED' : ''} ${lowStock ? '🔄 REORDER' : ''}</h3>
+                    <p>Qty: ${item.quantity || 0} | Reorder at: ${item.reorder_point || 0}</p>
+                    <p>Supplier: ${item.supplier || 'N/A'}</p>
+                    <p>Expires: ${item.expiration_date || 'N/A'}</p>
+                </div>
+                `;
+            }).join('');
+        }
+
+        loadInventory().then(displayInventory);
+    </script>
+</body>
+</html>
