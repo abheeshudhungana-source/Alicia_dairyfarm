@@ -1,0 +1,5 @@
+item_name,quantity,reorder_point,supplier,expiration_date
+Coach Leather Bag,15,5,Coach Inc.,2027-12-31
+Coach Wallet,2,10,Coach Inc.,2026-10-15
+Coach Signature Tote,8,15,Coach Inc.,2026-08-01
+Expired Belt,4,5,Coach Inc.,2020-01-01

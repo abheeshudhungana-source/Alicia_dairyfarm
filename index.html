@@ -389,25 +389,13 @@
         let inventory = [];
         let reviewItems = [];
 
-        async function loadArchiveData() {
+        async function loadDatasetData() {
             try {
-                console.log('Fetching archive.zip...');
-                const response = await fetch('archive.zip');
-                if (!response.ok) throw new Error('Failed to fetch archive.zip');
+                console.log('Fetching dairy_dataset.csv...');
+                const response = await fetch('dairy_dataset.csv');
+                if (!response.ok) throw new Error('Failed to fetch dairy_dataset.csv. Make sure you are using the local server link!');
                 
-                const blob = await response.blob();
-                const jszip = new JSZip();
-                
-                console.log('Extracting archive.zip...');
-                const zip = await jszip.loadAsync(blob);
-                
-                // Assuming the file is named dairy_dataset.csv
-                const csvFile = zip.file("dairy_dataset.csv");
-                if (!csvFile) {
-                    throw new Error("dairy_dataset.csv not found in archive.zip");
-                }
-                
-                const csvData = await csvFile.async("string");
+                const csvData = await response.text();
                 
                 console.log('Parsing CSV...');
                 Papa.parse(csvData, {
@@ -415,15 +403,15 @@
                     skipEmptyLines: true,
                     complete: function(results) {
                         inventory = results.data.map(row => ({
-                            product: row['Product Name'] + ' (' + row['Brand'] + ')',
-                            location: row['Storage Condition'],
+                            product: row['Product Name'] + (row['Brand'] ? ' (' + row['Brand'] + ')' : ''),
+                            location: row['Storage Condition'] || 'N/A',
                             quantity: parseInt(row['Quantity in Stock (liters/kg)'] || 0),
                             reorderPoint: parseInt(row['Reorder Quantity (liters/kg)'] || 0),
                             maxStock: parseInt(row['Quantity (liters/kg)'] || 0),
-                            expirationDate: row['Expiration Date'],
-                            supplier: row['Brand']
+                            expirationDate: row['Expiration Date'] || 'N/A',
+                            supplier: row['Brand'] || 'N/A'
                         }));
-                        console.log('Loaded', inventory.length, 'items from archive.zip');
+                        console.log('Loaded', inventory.length, 'items from dairy_dataset.csv');
                         initializeInventory();
                     },
                     error: function(error) {
@@ -432,7 +420,8 @@
                 });
                 
             } catch (error) {
-                console.error('Error loading archive data:', error);
+                console.error('Error loading dataset data:', error);
+                alert("Data couldn't load. If you opened this file by double-clicking it, please use the local server link instead: http://localhost:8000/index.html");
             }
         }
 
@@ -644,8 +633,8 @@
             alert(`Order placed for: ${product}`);
         }
 
-        // Initialize - Load data from archive.zip automatically
-        loadArchiveData();
+        // Initialize - Load data from dairy_dataset.csv automatically
+        loadDatasetData();
     </script>
 </body>
 </html>
