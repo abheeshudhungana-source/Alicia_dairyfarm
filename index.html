@@ -391,9 +391,9 @@
 
         async function loadDatasetData() {
             try {
-                console.log('Fetching dairy_dataset.csv...');
-                const response = await fetch('dairy_dataset.csv');
-                if (!response.ok) throw new Error('Failed to fetch dairy_dataset.csv. Make sure you are using the local server link!');
+                console.log('Fetching cleaned_up_dairydataset.csv...');
+                const response = await fetch('cleaned_up_dairydataset.csv');
+                if (!response.ok) throw new Error('Failed to fetch cleaned_up_dairydataset.csv. Make sure you are using the local server link!');
                 
                 const csvData = await response.text();
                 
@@ -629,7 +629,7 @@
                 return;
             }
 
-            const sortedItems = [...items].sort((a, b) => a.product.localeCompare(b.product, undefined, { sensitivity: 'base' });
+            const sortedItems = [...items].sort((a, b) => a.product.localeCompare(b.product, undefined, { sensitivity: 'base' }));
             sortedItems.forEach(item => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
