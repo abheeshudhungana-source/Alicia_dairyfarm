@@ -389,13 +389,13 @@
                     skipEmptyLines: true,
                     complete: function(results) {
                         inventory = results.data.map(row => ({
-                            baseProduct: row['Product Name'] || 'Other',
-                            brand: row['Brand'] || 'Generic',
-                            product: (row['Product Name'] || 'Other') + (row['Brand'] ? ' (' + row['Brand'] + ')' : ''),
+                            baseProduct: (row['Product Name'] || 'Other').trim(),
+                            brand: (row['Brand'] || 'Generic').trim(),
+                            product: (row['Product Name'] || 'Other').trim() + ' (' + (row['Brand'] || 'Generic').trim() + ')',
                             location: row['Storage Condition'] || 'N/A',
-                            quantity: parseInt(row['Quantity in Stock (liters/kg)'] || 0),
-                            reorderPoint: parseInt(row['Reorder Quantity (liters/kg)'] || 0),
-                            maxStock: parseInt(row['Quantity (liters/kg)'] || 0),
+                            quantity: parseFloat(row['Quantity in Stock (liters/kg)']) || 0,
+                            reorderPoint: parseFloat(row['Reorder Quantity (liters/kg)']) || 0,
+                            maxStock: parseFloat(row['Quantity (liters/kg)']) || 0,
                             expirationDate: row['Expiration Date'] || 'N/A',
                             supplier: row['Brand'] || 'N/A'
                         }));
