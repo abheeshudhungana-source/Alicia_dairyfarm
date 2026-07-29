@@ -412,6 +412,8 @@
                             supplier: row['Brand'] || 'N/A'
                         }));
                         console.log('Loaded', inventory.length, 'items from cleaned_up_dairydataset.csv');
+                        // Sort alphabetically by product name
+                        inventory.sort((a, b) => a.product.localeCompare(b.product));
                         initializeInventory();
                     },
                     error: function(error) {
